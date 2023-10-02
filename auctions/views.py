@@ -3,6 +3,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from .models import Listing, Bid, Comment
 
 from .models import User
 
@@ -61,3 +62,33 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+        
+def listing(request):
+    if request.method == "POST":
+        listing = Listing.objects.get()
+
+        title = request.POST["title"]
+        description = request.POST["description"]
+        img = request.POST["img"]
+        price = request.POST["price"]
+        cat = request.POST["category"]
+        seller = request.user
+
+        new_listing = Listing(
+            title=title,
+            description=description,
+            image=img,
+            category=cat,
+            amount=float(price),
+            seller=seller
+            )
+        new_listing.save()
+
+        return HttpResponseRedirect(reverse(index))
+    else:    
+        return render(request, "auctions/listing.html")
+
+def active(request):
+    return render(request, "auctions/active.html",{
+        "listings":Listing.objects.all()
+    })
