@@ -23,11 +23,16 @@
             <input class="form-control" type="text" name="img" placeholder="Image link">
         </div>
         <div class="form-group">
+            <label>Category: </label>
             <select class="form-control" name="category" id="category">
+                <br>
                 {% for category in categories %}
                     <option value="{{ category }}">{{ category }}</option>
                 {% endfor %}
             </select>
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="text" name="newCat" placeholder="Add new category">
         </div>
         <input type = "submit" action="{% url 'create' %}"></input>
     </form>

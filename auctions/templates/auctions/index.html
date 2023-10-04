@@ -5,8 +5,8 @@
 
     {% for listing in listings %}
         <div style="border: 1px grey; padding: 1rem;">            
-            <a href="{% url 'listing_page' listing.title %}"><h3 class="title">{{ listing.title }}</h3></a>
-            <a href="{% url 'listing_page' listing.title %}"><img style= "max-width: 400px; max-height: 300px;" src="{{ listing.image }}"></a>
+            <a href="{% url 'listing_page' listing.id %}"><h3 class="title">{{ listing.title }}</h3></a>
+            <a href="{% url 'listing_page' listing.id %}"><img style= "max-width: 400px; max-height: 300px;" src="{{ listing.image }}"></a>
             <p>${{ listing.amount }}</p>
             <p>{{ listing.description }}</p>
         </div>

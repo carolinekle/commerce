@@ -74,7 +74,11 @@ def create(request):
         img = request.POST["img"]
         price = request.POST["price"]
         cat = request.POST["category"]
+        new_cat = request.POST["newCat"]
         seller = request.user
+        
+        if new_cat is not None:
+            cat=new_cat
 
         new_listing = Listing(
             title=title,
@@ -93,5 +97,24 @@ def create(request):
             "categories":categories
         })
 
-def listing_page(request, lisitng_title):
-    return render
+def listing_page(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    return render(request, "auctions/listing.html",{
+        "listing":listing
+    })
+
+def add_watcher(request, listing_id):
+
+    watcher=request.user
+    listing = Listing.objects.get(id=listing_id)
+
+    if listing.watchlist.filter(watcher).exists():
+        #"watchlist_message":"Remove from watchlist"
+        #return render^ with dictionary
+        listing.watchlist.add(watcher)
+        listing.save()
+        #else
+            #add watcher with redirect and different message
+
+    return HttpResponseRedirect(reverse(listing, args=(listing_id, )))
+

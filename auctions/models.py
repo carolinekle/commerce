@@ -16,6 +16,7 @@ class Listing(models.Model):
     image = models.CharField(max_length=2000)
     category = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    watchlist = models.ManyToManyField(User, blank=True, null=True, related_name="ListingWatchlist")
 
     def __str__(self):
         return f"{self.id} ({self.title})"

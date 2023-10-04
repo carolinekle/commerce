@@ -1,0 +1,27 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    <h2>{{ listing.title }}</h2>
+        <div>            
+            <img style= "max-width: 500px; max-height: 500px;" src="{{ listing.image }}">
+            <p>{{ listing.description }}</p>
+            <p>${{ listing.amount }}</p>
+        </div>
+    <button type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">Add to Watchlist</button>
+    <br>
+    <br>
+    {% if user.is_authenticated %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="text" placeholder="Place your bid" name ="new_bid"></input>
+        <input type="submit"></input>
+    </form>
+    {% endif %}
+
+    <br>
+    <br>
+
+    <h3>Comments<h3>
+
+{% endblock %}
