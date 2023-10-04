@@ -9,7 +9,10 @@ from .models import User
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    active_listings = Listing.objects.filter(active=True)
+    return render(request, "auctions/index.html",{
+        "listings":active_listings
+    })
 
 
 def login_view(request):
@@ -63,10 +66,9 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
         
-def listing(request):
+def create(request):
     if request.method == "POST":
-        listing = Listing.objects.get()
-
+   
         title = request.POST["title"]
         description = request.POST["description"]
         img = request.POST["img"]
@@ -85,10 +87,11 @@ def listing(request):
         new_listing.save()
 
         return HttpResponseRedirect(reverse(index))
-    else:    
-        return render(request, "auctions/listing.html")
+    else:
+        categories = Listing.objects.values_list('category', flat=True).distinct()   
+        return render(request, "auctions/create.html", {
+            "categories":categories
+        })
 
-def active(request):
-    return render(request, "auctions/active.html",{
-        "listings":Listing.objects.all()
-    })
+def listing_page(request, lisitng_title):
+    return render
