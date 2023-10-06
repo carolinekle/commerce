@@ -98,23 +98,61 @@ def create(request):
         })
 
 def listing_page(request, listing_id):
+    watchlist_message = request.GET.get('w_message', '')
     listing = Listing.objects.get(id=listing_id)
+    comments = Comment.objects.get(id=listing_id)
     return render(request, "auctions/listing.html",{
-        "listing":listing
+        "listing":listing,
+        "watchlist_message": watchlist_message,
+        "comments":comments
     })
 
 def add_watcher(request, listing_id):
+    if request.method == "POST":
+        watcher=request.user
+        listing = Listing.objects.get(id=listing_id)
 
-    watcher=request.user
-    listing = Listing.objects.get(id=listing_id)
+        if watcher in listing.watchlist.all():
+            listing.watchlist.remove(watcher)
+            listing.save()
+            return HttpResponseRedirect(reverse("listing_page",  args=[listing_id]))
 
-    if listing.watchlist.filter(watcher).exists():
-        #"watchlist_message":"Remove from watchlist"
-        #return render^ with dictionary
-        listing.watchlist.add(watcher)
-        listing.save()
-        #else
-            #add watcher with redirect and different message
+        else:
+            listing.watchlist.add(watcher)
+            listing.save()
+            return HttpResponseRedirect(reverse("listing_page", args=[listing_id]) + "?w_message=Remove%20from%20watchlist")
+    else:
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
+    
+def watchlist_page(request):
+    user=request.user
+    watched_listings=user.ListingWatchlist.all()
+    return render(request, "auctions/watching.html", {
+        "listings":watched_listings
+    })
+    
+def categories_page(request):
+    if request.method == "POST":
+        selected_category = request.POST["category"]
+        active_listings_by_cat=Listing.objects.filter(active=True, category=selected_category)
+        return render(request, "auctions/index.html", {
+            "listings":active_listings_by_cat
+        })
+    else:
+        categories = Listing.objects.values_list('category', flat=True).distinct()   
+        return render(request, "auctions/cat.html", {
+            "categories":categories
+        })
 
-    return HttpResponseRedirect(reverse(listing, args=(listing_id, )))
+def comment(request, listing_id):
+    if request.method == "POST":
+        commenter = request.user
+        text = request.POST["comment"]
 
+        new_comment = Comment(
+            comment_text=text,
+            commenters=commenter,
+            listing=listing_id
+        )
+        new_comment.save()
+        return HttpResponseRedirect(reverse("listing_page"))

@@ -8,7 +8,21 @@
             <p>{{ listing.description }}</p>
             <p>${{ listing.amount }}</p>
         </div>
-    <button type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">Add to Watchlist</button>
+
+        <form type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">
+            {% csrf_token %}
+                
+            {% if watchlist_message %}
+            <button>  
+                {{ watchlist_message }}           
+             </button>
+            {% else %}
+            <button>  
+                Add to watchlist
+            </button>
+            {% endif %}
+
+        </form>
     <br>
     <br>
     {% if user.is_authenticated %}
@@ -22,6 +36,22 @@
     <br>
     <br>
 
-    <h3>Comments<h3>
+    <h3>Comments</h3>
+    {% for comment in comments %}
+    <b>{{ user }}</b>     <p>{{comment}}</p>
+    <br>
 
+   {% endfor %}
+
+    <br>
+
+    {% if user.is_authenticated %}
+    <form action="{% url 'comment' listing.id %}" method="POST">
+        {% csrf_token %}
+        <input type="text" placeholder="Post a comment!" name="comment">
+        </input>
+        <input type="submit"></input>
+    </form>
+
+    {% endif %}
 {% endblock %}

@@ -26,5 +26,9 @@ class Bid(models.Model):
     bidder = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Comment(models.Model):
-    commenters = models.ManyToManyField(User)
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="User")
     comment_text = models.CharField(max_length=240)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True, related_name="listing")
+    
+    def __str__(self):
+        return f"{self.commenter} comment on ({self.listing})"
