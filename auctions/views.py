@@ -100,7 +100,7 @@ def create(request):
 def listing_page(request, listing_id):
     watchlist_message = request.GET.get('w_message', '')
     listing = Listing.objects.get(id=listing_id)
-    comments = Comment.objects.get(id=listing_id)
+    comments = Comment.objects.filter(listing=listing)
     return render(request, "auctions/listing.html",{
         "listing":listing,
         "watchlist_message": watchlist_message,
@@ -110,7 +110,7 @@ def listing_page(request, listing_id):
 def add_watcher(request, listing_id):
     if request.method == "POST":
         watcher=request.user
-        listing = Listing.objects.get(id=listing_id)
+        listing = Listing.objects.get(pk=listing_id)
 
         if watcher in listing.watchlist.all():
             listing.watchlist.remove(watcher)
@@ -144,15 +144,37 @@ def categories_page(request):
             "categories":categories
         })
 
-def comment(request, listing_id):
-    if request.method == "POST":
-        commenter = request.user
-        text = request.POST["comment"]
+def add_comment(request, listing_id):
+    this_commenter = request.user
+    text = request.POST["new_comment"]
+    this_listing= Listing.objects.get(id=listing_id)
 
-        new_comment = Comment(
-            comment_text=text,
-            commenters=commenter,
-            listing=listing_id
-        )
-        new_comment.save()
-        return HttpResponseRedirect(reverse("listing_page"))
+    new_comment = Comment(
+        comment_text=text,
+        commenter=this_commenter,
+        listing=this_listing
+    )
+    new_comment.save()
+    return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
+
+def place_bid():
+    return
+"""
+    if request.method == "POST":
+        this_bidder = request.user
+        new_bid_price = request.POST["new_bid"]
+
+        this_listing = Listing.objects.get(id=listing_id)
+        
+        current_bid = Bid.objects.filter(bid_listing=this_listing).order_by('-bid_amount').first()
+
+        if current_bid is None or new_bid_price > current_bid.bid_amount:
+            new_bid = Bid(
+                bidder=this_bidder,
+                bid_amount=new_bid_price,
+                bid_listing=this_listing  
+            )
+            new_bid.save()
+            return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
+    else:
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id])) """

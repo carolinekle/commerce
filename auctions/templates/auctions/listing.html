@@ -3,10 +3,11 @@
 {% block body %}
 
     <h2>{{ listing.title }}</h2>
-        <div>            
+        <div>
+            <h5>Seller: {{ listing.seller }} </h5>            
             <img style= "max-width: 500px; max-height: 500px;" src="{{ listing.image }}">
             <p>{{ listing.description }}</p>
-            <p>${{ listing.amount }}</p>
+            <p>Current price: ${{ listing.amount }}</p>
         </div>
 
         <form type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">
@@ -32,26 +33,28 @@
         <input type="submit"></input>
     </form>
     {% endif %}
-
     <br>
     <br>
 
     <h3>Comments</h3>
-    {% for comment in comments %}
-    <b>{{ user }}</b>     <p>{{comment}}</p>
-    <br>
-
-   {% endfor %}
-
-    <br>
 
     {% if user.is_authenticated %}
-    <form action="{% url 'comment' listing.id %}" method="POST">
+    <form action="{% url 'add_comment' listing.id %}" method="POST">
         {% csrf_token %}
-        <input type="text" placeholder="Post a comment!" name="comment">
+        <input type="text" placeholder="Post a comment!" name="new_comment">
         </input>
         <input type="submit"></input>
     </form>
 
     {% endif %}
+
+    <br>
+
+    {% for comment in comments %}
+    <b>{{ comment.commenter }}</b>     <p>{{comment.comment_text}}</p>
+
+   {% endfor %}
+
+    <br>
+
 {% endblock %}
