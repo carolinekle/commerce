@@ -25,7 +25,7 @@ class Bid(models.Model):
     bid_listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.bid}"
+        return f"Bid of {self.bid_amount} by {self.bidder.username} on {self.bid_listing}"
 
 class Comment(models.Model):
     commenter = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="User")

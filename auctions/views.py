@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .models import Listing, Bid, Comment
+from decimal import Decimal
 
 from .models import User
 
@@ -99,12 +100,14 @@ def create(request):
 
 def listing_page(request, listing_id):
     watchlist_message = request.GET.get('w_message', '')
+    auction_message = request.GET.get('a_message', '')
     listing = Listing.objects.get(id=listing_id)
     comments = Comment.objects.filter(listing=listing)
     return render(request, "auctions/listing.html",{
         "listing":listing,
         "watchlist_message": watchlist_message,
-        "comments":comments
+        "comments":comments,
+        "auction_message":auction_message
     })
 
 def add_watcher(request, listing_id):
@@ -157,18 +160,17 @@ def add_comment(request, listing_id):
     new_comment.save()
     return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
 
-def place_bid():
-    return
-"""
+def place_bid(request, listing_id):
     if request.method == "POST":
         this_bidder = request.user
-        new_bid_price = request.POST["new_bid"]
+        new_bid_price = Decimal(request.POST["new_bid"])
 
-        this_listing = Listing.objects.get(id=listing_id)
+        this_listing = Listing.objects.get(pk=listing_id)
         
-        current_bid = Bid.objects.filter(bid_listing=this_listing).order_by('-bid_amount').first()
 
-        if current_bid is None or new_bid_price > current_bid.bid_amount:
+        if new_bid_price > this_listing.amount:
+            this_listing.amount = new_bid_price
+            this_listing.save()
             new_bid = Bid(
                 bidder=this_bidder,
                 bid_amount=new_bid_price,
@@ -176,5 +178,16 @@ def place_bid():
             )
             new_bid.save()
             return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
+        else:
+            return HttpResponse("Bid amount must be higher than current price.")
     else:
-        return HttpResponseRedirect(reverse("listing_page", args=[listing_id])) """
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
+
+def close_auction(request, listing_id):
+    if request.method == "POST":
+        this_listing = Listing.objects.get(pk=listing_id)
+        this_listing.active=False
+        this_listing.save()
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]) + "?a_message=This%20auction%20is%20closed.")
+    else:
+        return HttpResponse("Something has gone wrong. Contact your admin")

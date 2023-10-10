@@ -2,39 +2,55 @@
 
 {% block body %}
 
+{% if listing.active == False%}
+    <div class="alert alert-danger" role="alert">
+        {{ auction_message }}
+    </div>
+{% endif %}
+
     <h2>{{ listing.title }}</h2>
-        <div>
-            <h5>Seller: {{ listing.seller }} </h5>            
-            <img style= "max-width: 500px; max-height: 500px;" src="{{ listing.image }}">
-            <p>{{ listing.description }}</p>
-            <p>Current price: ${{ listing.amount }}</p>
-        </div>
+    <div>
+        <h5>Seller: {{ listing.seller }} </h5>            
+        <img style= "max-width: 500px; max-height: 500px;" src="{{ listing.image }}">
+        <p>{{ listing.description }}</p>
+        <p>Current price: ${{ listing.amount }}</p>
+    </div>
 
-        <form type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">
-            {% csrf_token %}
-                
-            {% if watchlist_message %}
-            <button>  
-                {{ watchlist_message }}           
-             </button>
-            {% else %}
-            <button>  
-                Add to watchlist
-            </button>
-            {% endif %}
+    <form type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">
+        {% csrf_token %}
+            
+        {% if watchlist_message %}
+        <button>  
+            {{ watchlist_message }}           
+        </button>
+        {% else %}
+        <button>  
+            Add to watchlist
+        </button>
+        {% endif %}
 
-        </form>
+    </form>
+
     <br>
     <br>
-    {% if user.is_authenticated %}
-    <form action="" method="POST">
+
+    {% if user.is_authenticated and user.id != listing.seller.id%}
+    <form action="{% url 'place_bid' listing.id %}" method="POST">
         {% csrf_token %}
         <input type="text" placeholder="Place your bid" name ="new_bid"></input>
         <input type="submit"></input>
     </form>
     {% endif %}
+    
+    {% if user.id == listing.seller.id%}
+    <form action="{% url 'close_auction' listing.id %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Close this auction"></input>
+    </form>
+
     <br>
     <br>
+    {% endif %}
 
     <h3>Comments</h3>
 
