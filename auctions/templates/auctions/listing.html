@@ -4,9 +4,19 @@
 
 {% if listing.active == False%}
     <div class="alert alert-danger" role="alert">
-        {{ auction_message }}
+        This listing is closed.
     </div>
 {% endif %}
+{% if not listing.active %}
+    {% if winner.id == user.id %}
+    <div class="alert alert-success" role="alert">
+        You have won this auction!
+    </div>
+    {% else %}
+        <p>No bids were placed on this listing.</p>
+    {% endif %}
+{% endif %}
+
 
     <h2>{{ listing.title }}</h2>
     <div>
@@ -18,20 +28,15 @@
 
     <form type="submit" action="{% url 'add_watcher' listing.id %}" method="POST">
         {% csrf_token %}
-            
-        {% if watchlist_message %}
-        <button>  
-            {{ watchlist_message }}           
-        </button>
+        {% if is_in_watchlist %}
+            <button>Remove from watchlist</button>
         {% else %}
-        <button>  
-            Add to watchlist
-        </button>
+            <button>Add to watchlist</button>
         {% endif %}
+    </form>
 
     </form>
 
-    <br>
     <br>
 
     {% if user.is_authenticated and user.id != listing.seller.id%}
@@ -41,7 +46,8 @@
         <input type="submit"></input>
     </form>
     {% endif %}
-    
+    <br>
+
     {% if user.id == listing.seller.id%}
     <form action="{% url 'close_auction' listing.id %}" method="POST">
         {% csrf_token %}

@@ -99,15 +99,27 @@ def create(request):
         })
 
 def listing_page(request, listing_id):
-    watchlist_message = request.GET.get('w_message', '')
-    auction_message = request.GET.get('a_message', '')
     listing = Listing.objects.get(id=listing_id)
     comments = Comment.objects.filter(listing=listing)
+    watcher=request.user
+
+    is_in_watchlist = listing.watchlist.filter(id=watcher.id).exists()
+    auction_message = Listing.objects.filter(active=False)
+
+    winner = None
+
+    if not listing.active:
+        winner_bid = Bid.objects.filter(bid_listing=listing).order_by('-bid_amount').first()
+        if winner_bid:
+            winner = winner_bid.bidder
+
+    
     return render(request, "auctions/listing.html",{
         "listing":listing,
-        "watchlist_message": watchlist_message,
         "comments":comments,
-        "auction_message":auction_message
+        "auction_message":auction_message,
+        "is_in_watchlist":is_in_watchlist,
+        "winner":winner
     })
 
 def add_watcher(request, listing_id):
@@ -118,12 +130,11 @@ def add_watcher(request, listing_id):
         if watcher in listing.watchlist.all():
             listing.watchlist.remove(watcher)
             listing.save()
-            return HttpResponseRedirect(reverse("listing_page",  args=[listing_id]))
 
         else:
             listing.watchlist.add(watcher)
             listing.save()
-            return HttpResponseRedirect(reverse("listing_page", args=[listing_id]) + "?w_message=Remove%20from%20watchlist")
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
     else:
         return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
     
@@ -131,7 +142,7 @@ def watchlist_page(request):
     user=request.user
     watched_listings=user.ListingWatchlist.all()
     return render(request, "auctions/watching.html", {
-        "listings":watched_listings
+        "listings":watched_listings,
     })
     
 def categories_page(request):
@@ -188,6 +199,6 @@ def close_auction(request, listing_id):
         this_listing = Listing.objects.get(pk=listing_id)
         this_listing.active=False
         this_listing.save()
-        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]) + "?a_message=This%20auction%20is%20closed.")
+        return HttpResponseRedirect(reverse("listing_page", args=[listing_id]))
     else:
         return HttpResponse("Something has gone wrong. Contact your admin")
